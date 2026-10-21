@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vendas Porsche — Painel</title>
+<meta name="description" content="Dashboard de 100 vendas Porsche: receita por família, pagamento, estados, cidades, anos e faixas de preço.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23d5001c'/></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ecebe7;--surface:#fbfaf7;--ink:#17181a;--mute:#6b6d70;--line:#d8d6cf;--red:#d5001c;--bar2:#b9b7ae;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121315;--surface:#1b1c1f;--ink:#f1efe9;--mute:#9a9ca0;--line:#2e3034;--bar2:#4a4c50;--red:#ff3b50}}
+:root[data-theme="dark"]{--bg:#121315;--surface:#1b1c1f;--ink:#f1efe9;--mute:#9a9ca0;--line:#2e3034;--bar2:#4a4c50;--red:#ff3b50}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 Barlow,system-ui,sans-serif}
+main{max-width:1120px;margin:0 auto;padding:24px 16px 48px}
+h1{font:700 clamp(34px,7vw,56px)/1 'Barlow Condensed',sans-serif;margin:0 0 6px}
+h1 span{color:var(--red)}
+.sub{color:var(--mute);margin:0 0 20px;max-width:64ch}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end;border-top:3px solid var(--red);padding:14px 0 18px}
+label{display:flex;flex-direction:column;font-size:13px;color:var(--mute);gap:3px;flex:1 1 150px}
+select,button{font:500 15px Barlow,sans-serif;padding:8px 10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:2px}
+button{cursor:pointer;flex:0 0 auto}
+select:focus-visible,button:focus-visible,.row.k:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:20px}
+.kpi{background:var(--surface);padding:14px 16px}
+.kpi b{display:block;font:700 32px/1.1 'Barlow Condensed',sans-serif}
+.kpi small{color:var(--mute)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+section{background:var(--surface);border:1px solid var(--line);padding:18px;min-width:0}
+section.wide{grid-column:1/-1}
+h2{font:600 22px/1.15 'Barlow Condensed',sans-serif;margin:0 0 4px}
+h3{font:600 15px 'Barlow',sans-serif;color:var(--mute);margin:26px 0 8px}
+.ins{color:var(--mute);font-size:14px;margin:0 0 14px;min-height:21px}
+.row{display:grid;grid-template-columns:140px 1fr 80px;gap:10px;align-items:center;margin:7px 0;font-size:14px}
+.row>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row.k{cursor:pointer}.row.k:hover .fill{filter:brightness(.85)}
+.track{height:14px;background:var(--line)}
+.fill{height:100%;background:var(--bar2)}
+.row.top .fill,.col.top .bar{background:var(--red)}
+.row span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.cols{display:flex;gap:8px;height:200px;padding-top:20px}
+.col{flex:1;display:flex;flex-direction:column;min-width:0;font-size:12px;text-align:center}
+.bw{flex:1;display:flex;align-items:flex-end}
+.bar{width:100%;background:var(--bar2);position:relative;min-height:2px}
+.bar span{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:11px;white-space:nowrap;color:var(--mute)}
+.col>.l{margin-top:4px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--mute);font-size:13px}
+.empty{color:var(--mute)}
+footer{color:var(--mute);font-size:13px;margin-top:18px;max-width:90ch}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.row{grid-template-columns:105px 1fr 70px}}
+</style></head><body><main>
+<h1>Vendas <span>Porsche</span></h1>
+<p class="sub">100 vendas da base higienizada. Use os filtros ou clique nas barras para recortar: tudo se atualiza junto.</p>
+<div class="filters">
+<label>Família<select id="f-f"></select></label>
+<label>Ano do modelo<select id="f-y"></select></label>
+<label>Estado<select id="f-s"></select></label>
+<label>Pagamento<select id="f-p"></select></label>
+<button id="reset">Limpar filtros</button>
+</div>
+<div class="kpis" id="kpis"></div>
+<div class="grid">
+<section class="wide"><h2>Qual família de modelos gera mais receita?</h2><p class="ins" id="i1"></p><div id="c1"></div>
+<h3>Ticket médio por família</h3><div id="c1b"></div></section>
+<section><h2>Como os clientes pagam?</h2><p class="ins" id="i2"></p><div id="c2"></div></section>
+<section><h2>Em quais estados as vendas se concentram?</h2><p class="ins" id="i3"></p><div id="c3"></div></section>
+<section class="wide"><h2>Como a receita se distribui por ano do modelo?</h2><p class="ins" id="i4"></p><div id="c4"></div></section>
+<section><h2>Quais modelos mais faturam?</h2><p class="ins" id="i5"></p><div id="c5"></div></section>
+<section><h2>Quais cidades mais faturam?</h2><p class="ins" id="i6"></p><div id="c6"></div></section>
+<section><h2>Em que faixa de preço as vendas acontecem?</h2><p class="ins" id="i7"></p><div id="c7"></div></section>
+<section><h2>Cada família paga de um jeito?</h2><p class="ins" id="i8"></p><div class="scroll" id="c8"></div></section>
+<section class="wide"><h2>As 10 maiores vendas</h2><p class="ins" id="i9"></p><div class="scroll" id="c9"></div></section>
+</div>
+<footer>Fonte: porsche_database_sanitized.xlsx. Tratamento aplicado: preços abaixo de 1.000 foram lidos como milhares de dólares (ex.: 121 = US$ 121.000); 2 preços INVALID ficam fora de receita e ticket médio, mas contam como venda; formas de pagamento equivalentes foram agrupadas (ex.: Wire Transfer, Bank Transfer e ACH = Transferência). Valores em dólares americanos.</footer>
+</main>
+<script>
+const D=[{"m": "718 Cayman", "f": "718", "y": 2022, "p": 79500.0, "pg": "Cartão de crédito", "s": "MA", "c": "Boston"}, {"m": "911 Turbo S", "f": "911", "y": 2024, "p": 235000.0, "pg": "Transferência", "s": "WA", "c": "Seattle"}, {"m": "Cayenne Coupe", "f": "Cayenne", "y": 2023, "p": 112750.0, "pg": "Financiamento", "s": "TX", "c": "Austin"}, {"m": "Macan S", "f": "Macan", "y": 2021, "p": 68900.0, "pg": "Dinheiro", "s": "CO", "c": "Denver"}, {"m": "Taycan 4S", "f": "Taycan", "y": 2024, "p": 121000.0, "pg": "Transferência", "s": "CA", "c": "Los Angeles"}, {"m": "Panamera 4", "f": "Panamera", "y": 2023, "p": 104500.0, "pg": "Cartão de crédito", "s": "FL", "c": "Miami"}, {"m": "911 Carrera S", "f": "911", "y": 2020, "p": 96300.0, "pg": "Leasing", "s": "NY", "c": "New York"}, {"m": "Cayenne E-Hybrid", "f": "Cayenne", "y": 2022, "p": 89750.0, "pg": "Transferência", "s": "CA", "c": "San Diego"}, {"m": "718 Boxster", "f": "718", "y": 2021, "p": 73500.0, "pg": "Cartão de débito", "s": "IL", "c": "Chicago"}, {"m": "Macan GTS", "f": "Macan", "y": 2024, "p": 95000.0, "pg": "Financiamento", "s": "AZ", "c": "Phoenix"}, {"m": "Taycan Turbo", "f": "Taycan", "y": 2023, "p": 153200.5, "pg": "Transferência", "s": "TX", "c": "Dallas"}, {"m": "911 GT3", "f": "911", "y": 2024, "p": 241000.0, "pg": "Transferência", "s": "NV", "c": "Las Vegas"}, {"m": "Panamera Turbo S", "f": "Panamera", "y": 2022, "p": 132000.0, "pg": "Dinheiro", "s": "CA", "c": "San Jose"}, {"m": "Cayenne Turbo GT", "f": "Cayenne", "y": 2024, "p": 188000.0, "pg": "Cripto", "s": "TX", "c": "Houston"}, {"m": "911 Carrera Cabriolet", "f": "911", "y": 2023, "p": 127800.0, "pg": "Cartão de crédito", "s": "GA", "c": "Atlanta"}, {"m": "Macan", "f": "Macan", "y": 2021, "p": 58900.0, "pg": "Transferência", "s": "FL", "c": "Orlando"}, {"m": "718 Spyder RS", "f": "718", "y": 2024, "p": 164000.0, "pg": "Financiamento", "s": "OR", "c": "Portland"}, {"m": "Taycan Cross Turismo", "f": "Taycan", "y": 2023, "p": 118500.0, "pg": "Transferência", "s": "NC", "c": "Charlotte"}, {"m": "Cayenne S", "f": "Cayenne", "y": 2022, "p": 91300.0, "pg": "Cartão de crédito", "s": "TN", "c": "Nashville"}, {"m": "911 Targa 4S", "f": "911", "y": 2024, "p": 158750.0, "pg": "Leasing", "s": "MN", "c": "Minneapolis"}, {"m": "Panamera", "f": "Panamera", "y": 2020, "p": 72000.0, "pg": "Transferência", "s": "PA", "c": "Philadelphia"}, {"m": "Macan Electric", "f": "Macan", "y": 2025, "p": 86500.0, "pg": "Transferência", "s": "TX", "c": "San Antonio"}, {"m": "911 Dakar", "f": "911", "y": 2024, "p": 270000.0, "pg": "Dinheiro", "s": "UT", "c": "Salt Lake City"}, {"m": "Taycan GTS", "f": "Taycan", "y": 2023, "p": 139000.0, "pg": "Financiamento", "s": "NC", "c": "Raleigh"}, {"m": "Cayenne", "f": "Cayenne", "y": 2021, "p": 76800.0, "pg": "Cartão de crédito", "s": "MI", "c": "Detroit"}, {"m": "718 Cayman GT4 RS", "f": "718", "y": 2024, "p": 173600.0, "pg": "Transferência", "s": "OH", "c": "Columbus"}, {"m": "911 Carrera GTS", "f": "911", "y": 2022, "p": 119900.0, "pg": "Dinheiro", "s": "IN", "c": "Indianapolis"}, {"m": "Panamera 4 E-Hybrid", "f": "Panamera", "y": 2023, "p": 109250.0, "pg": "Leasing", "s": "TX", "c": "Fort Worth"}, {"m": "Macan T", "f": "Macan", "y": 2022, "p": null, "pg": "Transferência", "s": "FL", "c": "Jacksonville"}, {"m": "Taycan Turbo S", "f": "Taycan", "y": 2025, "p": 214000.0, "pg": "Cripto", "s": "CA", "c": "San Diego"}, {"m": "911 Carrera", "f": "911", "y": 2024, "p": 124500.0, "pg": "Cartão de crédito", "s": "FL", "c": "Tampa"}, {"m": "Cayenne S", "f": "Cayenne", "y": 2023, "p": 98200.0, "pg": "Transferência", "s": "CA", "c": "Sacramento"}, {"m": "Macan", "f": "Macan", "y": 2022, "p": 67500.0, "pg": "Financiamento", "s": "OH", "c": "Cleveland"}, {"m": "Taycan", "f": "Taycan", "y": 2025, "p": 116900.0, "pg": "Transferência", "s": "WI", "c": "Milwaukee"}, {"m": "Panamera 4S", "f": "Panamera", "y": 2024, "p": 112000.0, "pg": "Dinheiro", "s": "MO", "c": "Kansas City"}, {"m": "718 Boxster", "f": "718", "y": 2021, "p": 74000.0, "pg": "Cartão de débito", "s": "NE", "c": "Omaha"}, {"m": "911 Turbo", "f": "911", "y": 2024, "p": 198300.0, "pg": "Transferência", "s": "NM", "c": "Albuquerque"}, {"m": "Cayenne Coupe", "f": "Cayenne", "y": 2023, "p": 103750.0, "pg": "Transferência", "s": "AZ", "c": "Tucson"}, {"m": "Macan GTS", "f": "Macan", "y": 2024, "p": 93600.0, "pg": "Financiamento", "s": "CA", "c": "Fresno"}, {"m": "Taycan 4S", "f": "Taycan", "y": 2025, "p": 129000.0, "pg": "Transferência", "s": "VA", "c": "Virginia Beach"}, {"m": "Panamera Turbo", "f": "Panamera", "y": 2022, "p": 136000.0, "pg": "Cartão de crédito", "s": "CO", "c": "Colorado Springs"}, {"m": "911 GT3 RS", "f": "911", "y": 2024, "p": 286500.0, "pg": "Transferência", "s": "TX", "c": "Arlington"}, {"m": "Cayenne E-Hybrid", "f": "Cayenne", "y": 2023, "p": 92800.0, "pg": "Leasing", "s": "CA", "c": "Bakersfield"}, {"m": "Macan T", "f": "Macan", "y": 2022, "p": 72400.0, "pg": "Dinheiro", "s": "AZ", "c": "Mesa"}, {"m": "Taycan Turbo", "f": "Taycan", "y": 2025, "p": 158500.0, "pg": "Cripto", "s": "GA", "c": "Atlanta"}, {"m": "718 Cayman", "f": "718", "y": 2021, "p": 69900.0, "pg": "Transferência", "s": "CA", "c": "Long Beach"}, {"m": "911 Targa 4", "f": "911", "y": 2024, "p": 141250.0, "pg": "Financiamento", "s": "CA", "c": "Oakland"}, {"m": "Panamera", "f": "Panamera", "y": 2020, "p": 71500.0, "pg": "Transferência", "s": "OK", "c": "Tulsa"}, {"m": "Cayenne Turbo", "f": "Cayenne", "y": 2023, "p": 146800.0, "pg": "Cartão de crédito", "s": "KS", "c": "Wichita"}, {"m": "Macan Electric", "f": "Macan", "y": 2025, "p": 89700.0, "pg": "Leasing", "s": "LA", "c": "New Orleans"}, {"m": "911 Carrera S", "f": "911", "y": 2022, "p": 104600.0, "pg": "Transferência", "s": "HI", "c": "Honolulu"}, {"m": "Taycan GTS", "f": "Taycan", "y": 2024, "p": 142000.0, "pg": "Transferência", "s": "CA", "c": "Anaheim"}, {"m": "Cayenne", "f": "Cayenne", "y": 2021, "p": 78400.0, "pg": "Dinheiro", "s": "NV", "c": "Henderson"}, {"m": "718 Spyder RS", "f": "718", "y": 2025, "p": 169000.0, "pg": "Financiamento", "s": "KY", "c": "Lexington"}, {"m": "911 Dakar", "f": "911", "y": 2024, "p": 268900.0, "pg": "Cartão de crédito", "s": "CA", "c": "Riverside"}, {"m": "Panamera 4", "f": "Panamera", "y": 2023, "p": 101300.0, "pg": "Transferência", "s": "TX", "c": "Corpus Christi"}, {"m": "Macan S", "f": "Macan", "y": 2021, "p": 66750.0, "pg": "Dinheiro", "s": "MO", "c": "St. Louis"}, {"m": "Taycan Cross Turismo", "f": "Taycan", "y": 2024, "p": 127900.0, "pg": "Leasing", "s": "PA", "c": "Pittsburgh"}, {"m": "Cayenne Turbo GT", "f": "Cayenne", "y": 2025, "p": null, "pg": "Transferência", "s": "OH", "c": "Cincinnati"}, {"m": "911 Carrera Cabriolet", "f": "911", "y": 2023, "p": 132000.0, "pg": "Cripto", "s": "AK", "c": "Anchorage"}, {"m": "718 Cayman GT4 RS", "f": "718", "y": 2024, "p": 176400.0, "pg": "Cartão de crédito", "s": "TX", "c": "Plano"}, {"m": "Panamera 4 E-Hybrid", "f": "Panamera", "y": 2022, "p": 108500.0, "pg": "Transferência", "s": "NJ", "c": "Newark"}, {"m": "Macan", "f": "Macan", "y": 2021, "p": 59000.0, "pg": "Financiamento", "s": "NC", "c": "Greensboro"}, {"m": "Taycan Turbo S", "f": "Taycan", "y": 2025, "p": 218000.0, "pg": "Transferência", "s": "NE", "c": "Lincoln"}, {"m": "Cayenne S", "f": "Cayenne", "y": 2024, "p": 99950.0, "pg": "Cartão de débito", "s": "NJ", "c": "Jersey City"}, {"m": "911 Carrera GTS", "f": "911", "y": 2024, "p": 121750.0, "pg": "Cartão de crédito", "s": "AZ", "c": "Chandler"}, {"m": "718 Boxster GTS", "f": "718", "y": 2023, "p": 91500.0, "pg": "Leasing", "s": "NV", "c": "Reno"}, {"m": "Panamera Turbo S", "f": "Panamera", "y": 2022, "p": 134000.0, "pg": "Transferência", "s": "NY", "c": "Buffalo"}, {"m": "Macan GTS", "f": "Macan", "y": 2024, "p": 96800.0, "pg": "Transferência", "s": "NC", "c": "Durham"}, {"m": "Taycan 4S", "f": "Taycan", "y": 2025, "p": 131600.0, "pg": "Transferência", "s": "TX", "c": "Laredo"}, {"m": "Cayenne E-Hybrid", "f": "Cayenne", "y": 2023, "p": 94300.0, "pg": "Dinheiro", "s": "WI", "c": "Madison"}, {"m": "911 Turbo S", "f": "911", "y": 2025, "p": 242000.0, "pg": "Cripto", "s": "TX", "c": "Lubbock"}, {"m": "718 Cayman S", "f": "718", "y": 2022, "p": 82750.0, "pg": "Cartão de crédito", "s": "OH", "c": "Toledo"}, {"m": "Macan Electric", "f": "Macan", "y": 2026, "p": 91300.0, "pg": "Transferência", "s": "CA", "c": "Irvine"}, {"m": "Panamera", "f": "Panamera", "y": 2021, "p": 79900.0, "pg": "Financiamento", "s": "TX", "c": "Garland"}, {"m": "Cayenne Coupe", "f": "Cayenne", "y": 2024, "p": 111000.0, "pg": "Transferência", "s": "TX", "c": "Irving"}, {"m": "911 Targa 4S", "f": "911", "y": 2023, "p": 156500.0, "pg": "Dinheiro", "s": "VA", "c": "Chesapeake"}, {"m": "Taycan", "f": "Taycan", "y": 2025, "p": 119900.0, "pg": "Leasing", "s": "AZ", "c": "Scottsdale"}, {"m": "Macan T", "f": "Macan", "y": 2022, "p": 73200.0, "pg": "Transferência", "s": "VA", "c": "Norfolk"}, {"m": "911 GT3", "f": "911", "y": 2024, "p": 224000.0, "pg": "Transferência", "s": "ID", "c": "Boise"}, {"m": "911 Carrera", "f": "911", "y": 2024, "p": 126900.0, "pg": "Cartão de crédito", "s": "FL", "c": "Orlando"}, {"m": "Cayenne", "f": "Cayenne", "y": 2023, "p": 84500.0, "pg": "Transferência", "s": "CA", "c": "San Jose"}, {"m": "Macan S", "f": "Macan", "y": 2022, "p": 69800.0, "pg": "Financiamento", "s": "FL", "c": "Tampa"}, {"m": "Taycan 4S", "f": "Taycan", "y": 2025, "p": 132700.0, "pg": "Transferência", "s": "CO", "c": "Denver"}, {"m": "Panamera", "f": "Panamera", "y": 2021, "p": 81000.0, "pg": "Dinheiro", "s": "TX", "c": "Austin"}, {"m": "718 Cayman", "f": "718", "y": 2023, "p": 78900.0, "pg": "Cartão de débito", "s": "WA", "c": "Seattle"}, {"m": "911 Turbo S", "f": "911", "y": 2026, "p": 249300.0, "pg": "Transferência", "s": "MA", "c": "Boston"}, {"m": "Cayenne Coupe", "f": "Cayenne", "y": 2024, "p": 108750.0, "pg": "Transferência", "s": "AZ", "c": "Phoenix"}, {"m": "Macan Electric", "f": "Macan", "y": 2026, "p": 92600.0, "pg": "Financiamento", "s": "IL", "c": "Chicago"}, {"m": "Taycan Turbo", "f": "Taycan", "y": 2025, "p": 164000.0, "pg": "Transferência", "s": "TX", "c": "Dallas"}, {"m": "Panamera 4S", "f": "Panamera", "y": 2024, "p": 119000.0, "pg": "Cartão de crédito", "s": "CA", "c": "San Francisco"}, {"m": "911 GT3", "f": "911", "y": 2026, "p": 232500.0, "pg": "Transferência", "s": "NV", "c": "Las Vegas"}, {"m": "Cayenne E-Hybrid", "f": "Cayenne", "y": 2023, "p": 96800.0, "pg": "Leasing", "s": "NC", "c": "Charlotte"}, {"m": "Macan T", "f": "Macan", "y": 2022, "p": 74400.0, "pg": "Dinheiro", "s": "AZ", "c": "Mesa"}, {"m": "Taycan GTS", "f": "Taycan", "y": 2025, "p": 148500.0, "pg": "Cripto", "s": "GA", "c": "Atlanta"}, {"m": "718 Boxster", "f": "718", "y": 2021, "p": 71900.0, "pg": "Transferência", "s": "CA", "c": "Long Beach"}, {"m": "911 Targa 4", "f": "911", "y": 2024, "p": 143250.0, "pg": "Financiamento", "s": "CA", "c": "Oakland"}, {"m": "Panamera Turbo", "f": "Panamera", "y": 2020, "p": 137500.0, "pg": "Transferência", "s": "OK", "c": "Tulsa"}, {"m": "Cayenne Turbo GT", "f": "Cayenne", "y": 2025, "p": 204800.0, "pg": "Cartão de crédito", "s": "KS", "c": "Wichita"}, {"m": "911 Dakar", "f": "911", "y": 2024, "p": 271700.0, "pg": "Leasing", "s": "LA", "c": "New Orleans"}];
+const $=id=>document.getElementById(id);
+const usd=v=>'US$ '+(v>=1e6?(v/1e6).toFixed(2).replace('.',',')+' mi':Math.round(v/1e3)+' mil');
+const pct=(a,b)=>b?Math.round(a/b*100)+'%':'—';
+const uniq=k=>[...new Set(D.map(x=>x[k]))].sort((a,b)=>a>b?1:-1);
+const F={f:'f-f',y:'f-y',s:'f-s',pg:'f-p'};
+Object.entries(F).forEach(([k,id])=>{$(id).innerHTML='<option value="">Todos</option>'+uniq(k).map(v=>`<option>${v}</option>`).join('');$(id).onchange=draw});
+$('reset').onclick=()=>{Object.values(F).forEach(id=>$(id).value='');draw()};
+function group(rows,k){const m={};rows.forEach(r=>{const key=typeof k==='function'?k(r):r[k];const g=m[key]||(m[key]={n:0,np:0,rev:0});g.n++;if(r.p!=null){g.np++;g.rev+=r.p}});return Object.entries(m).map(([name,g])=>({name,...g,avg:g.np?g.rev/g.np:0}))}
+const desc=f=>(a,b)=>f(b)-f(a);
+function bars(el,list,val,fmt,fk){
+ if(!list.length){el.innerHTML='<p class="empty">Nenhuma venda com esses filtros.</p>';return}
+ const max=Math.max(...list.map(val))||1;
+ el.innerHTML=list.map((g,i)=>`<div class="row${i?'':' top'}${fk?' k':''}"${fk?` tabindex="0" data-k="${fk}" data-v="${g.name}" title="Filtrar por ${g.name}"`:''}><span>${g.name}</span><div class="track"><div class="fill" style="width:${val(g)/max*100}%"></div></div><span>${fmt(g)}</span></div>`).join('');
+ if(fk)el.querySelectorAll('.k').forEach(r=>{const go=()=>{const s=$(F[fk]);if([...s.options].some(o=>o.value===r.dataset.v)){s.value=r.dataset.v;draw()}};r.onclick=go;r.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}}})}
+function cols(el,list,val,fmt){
+ if(!list.length){el.innerHTML='<p class="empty">Nenhuma venda com esses filtros.</p>';return}
+ const max=Math.max(...list.map(val))||1,top=Math.max(...list.map(val));
+ el.innerHTML='<div class="cols">'+list.map(g=>`<div class="col${val(g)===top?' top':''}"><div class="bw"><div class="bar" style="height:${val(g)/max*100}%"><span>${fmt(g)}</span></div></div><div class="l">${g.name}</div></div>`).join('')+'</div>'}
+const band=p=>p==null?null:p<75e3?'Até 75 mil':p<100e3?'75 a 100 mil':p<150e3?'100 a 150 mil':p<200e3?'150 a 200 mil':'Acima de 200 mil';
+const bandOrder=['Até 75 mil','75 a 100 mil','100 a 150 mil','150 a 200 mil','Acima de 200 mil'];
+function draw(){
+ const sel={};Object.entries(F).forEach(([k,id])=>sel[k]=$(id).value);
+ const R=D.filter(r=>Object.entries(sel).every(([k,v])=>!v||String(r[k])===v));
+ const priced=R.filter(r=>r.p!=null),rev=priced.reduce((a,r)=>a+r.p,0);
+ const best=priced.reduce((a,r)=>!a||r.p>a.p?r:a,null);
+ $('kpis').innerHTML=[[R.length,'vendas'],[usd(rev),'receita'],[priced.length?usd(rev/priced.length):'—','ticket médio'],[best?usd(best.p):'—','maior venda'+(best?` (${best.m})`:'')],[new Set(R.map(r=>r.s)).size,'estados'],[new Set(R.map(r=>r.c)).size,'cidades']].map(([v,l])=>`<div class="kpi"><b>${v}</b><small>${l}</small></div>`).join('');
+ const g1=group(R,'f').sort(desc(g=>g.rev));
+ bars($('c1'),g1,g=>g.rev,g=>usd(g.rev),'f');
+ $('i1').textContent=g1.length?`${g1[0].name} lidera com ${pct(g1[0].rev,rev)} da receita (${g1[0].n} vendas).`:'';
+ const g1b=[...g1].sort(desc(g=>g.avg));
+ bars($('c1b'),g1b,g=>g.avg,g=>usd(g.avg),'f');
+ const g2=group(R,'pg').sort(desc(g=>g.n));
+ bars($('c2'),g2,g=>g.n,g=>g.n+' · '+pct(g.n,R.length),'pg');
+ $('i2').textContent=g2.length?`${g2[0].name} é a forma mais usada: ${pct(g2[0].n,R.length)} das vendas.`:'';
+ const g3=group(R,'s').sort(desc(g=>g.rev)).slice(0,8);
+ bars($('c3'),g3,g=>g.rev,g=>usd(g.rev),'s');
+ $('i3').textContent=g3.length>1?`${g3[0].name} e ${g3[1].name} somam ${pct(g3[0].rev+g3[1].rev,rev)} da receita.`:(g3.length?`Só ${g3[0].name} neste recorte.`:'');
+ const g4=group(R,'y').sort((a,b)=>a.name-b.name);
+ cols($('c4'),g4,g=>g.rev,g=>usd(g.rev));
+ const t4=[...g4].sort(desc(g=>g.rev))[0];
+ $('i4').textContent=t4?`Modelos ${t4.name} concentram ${pct(t4.rev,rev)} da receita, com ${t4.n} vendas.`:'';
+ const g5=group(R,'m').sort(desc(g=>g.rev)).slice(0,8);
+ bars($('c5'),g5,g=>g.rev,g=>usd(g.rev));
+ $('i5').textContent=g5.length?`${g5[0].name} é o modelo que mais fatura: ${usd(g5[0].rev)} em ${g5[0].n} venda(s).`:'';
+ const g6=group(R,'c').sort(desc(g=>g.rev)).slice(0,8);
+ bars($('c6'),g6,g=>g.rev,g=>usd(g.rev));
+ $('i6').textContent=g6.length?`${g6[0].name} é a cidade com maior receita (${usd(g6[0].rev)}).`:'';
+ const g7=group(priced,r=>band(r.p));const g7s=bandOrder.map(b=>g7.find(g=>g.name===b)||{name:b,n:0});
+ bars($('c7'),g7s,g=>g.n,g=>g.n+' · '+pct(g.n,priced.length));
+ const t7=[...g7s].sort(desc(g=>g.n))[0];
+ $('i7').textContent=priced.length?`A faixa ${t7.name} reúne ${pct(t7.n,priced.length)} das vendas com preço válido.`:'';
+ const pgs=g2.map(g=>g.name),fams=g1.map(g=>g.name),cnt={};
+ R.forEach(r=>{const k=r.f+'|'+r.pg;cnt[k]=(cnt[k]||0)+1});
+ const mx=Math.max(1,...Object.values(cnt));
+ $('c8').innerHTML=R.length?`<table><tr><th></th>${pgs.map(p=>`<th>${p}</th>`).join('')}</tr>${fams.map(f=>`<tr><td>${f}</td>${pgs.map(p=>{const n=cnt[f+'|'+p]||0;return `<td style="background:color-mix(in srgb,var(--red) ${Math.round(n/mx*55)}%,transparent)">${n||''}</td>`}).join('')}</tr>`).join('')}</table>`:'<p class="empty">Nenhuma venda com esses filtros.</p>';
+ const fp=g2.length&&fams.length?fams.map(f=>({f,t:pgs.map(p=>({p,n:cnt[f+'|'+p]||0})).sort(desc(x=>x.n))[0]})):[];
+ const tops=[...new Set(fp.map(x=>x.t.p))];
+ $('i8').textContent=!fp.length?'':tops.length===1?`${tops[0]} é a forma mais usada em ${fp.length>1?'todas as famílias':'a família '+fp[0].f}; o que muda é o peso das demais.`:fp.map(x=>`${x.f}: ${x.t.p}`).join(' · ');
+ const g9=[...priced].sort(desc(r=>r.p)).slice(0,10);
+ $('c9').innerHTML=g9.length?`<table><tr><th>Modelo</th><th>Ano</th><th>Cidade</th><th>Pagamento</th><th>Preço</th></tr>${g9.map(r=>`<tr><td>${r.m}</td><td>${r.y}</td><td>${r.c}, ${r.s}</td><td>${r.pg}</td><td>US$ ${r.p.toLocaleString('pt-BR')}</td></tr>`).join('')}</table>`:'<p class="empty">Nenhuma venda com esses filtros.</p>';
+ $('i9').textContent=g9.length?`As 10 maiores somam ${usd(g9.reduce((a,r)=>a+r.p,0))}, ou ${pct(g9.reduce((a,r)=>a+r.p,0),rev)} da receita.`:'';
+}
+draw();
+</script></body></html>
