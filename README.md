@@ -2,7 +2,7 @@
 
 Projeto do curso **Criando Agentes de Tratamento de Dados** (DIO). A base tem 100 vendas, com cada campo em duas versões: o dado cru e o sanitizado. A dashboard usa a versão sanitizada e responde perguntas de negócio em um HTML de arquivo único, com os dados embutidos. Os filtros recortam todos os gráficos ao mesmo tempo, e clicar em uma barra aplica o filtro correspondente.
 
-**Endereço publicado:** `https://SEU-USUARIO.github.io/nome-do-repositorio/`
+**Endereço publicado:** `https://github.com/ronman-gif/Porshe-dashbord.git`
 **Prints:** `docs/print-dashboard.png` (tela inicial) e `docs/print-filtro-taycan.png` (filtro de exemplo aplicado)
 
 ## Perguntas de negócio escolhidas e por quê
